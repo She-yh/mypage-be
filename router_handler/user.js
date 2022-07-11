@@ -1,14 +1,35 @@
 const bcryptjs = require('bcryptjs')
-console.log(bcryptjs.hashSync("15730319191",10), bcryptjs.hashSync("Syh20001123.", 10))
+const db = require('../db')
+
+const jwt = require('jsonwebtoken')
+const config = require('../const')
+
 exports.regUser = (req, res) => {
-    res.send('reguser ok')
+    return res.send('reguser ok')
 }
 
 exports.logIn = (req, res) => {
     const userInfo = req.body
+    const sql = `select * from userInfo where username=?`
     if(!userInfo.username || !userInfo.password) {
-        return res.send({ status: 1, message: "用户名或密码密码不合法"})
+        return res.cc("用户名或密码不合法")
     }
-    res.send('login ok')
+    db.query(sql, userInfo.username, (err, results) => {
+        if(err) return res.cc(err);
+        if(results.length !== 1) {
+            if(results.length === 0) return res.cc("未查询到用户信息")
+            else return res.cc("用户重复注册")
+        }
+        const compareResult = bcryptjs.compareSync(userInfo.password, results[0].password)
+        if(!compareResult){
+            return res.cc("密码错误")
+        }
+        const user = { ...results[0], password: '', realname: ''};
+        const tokenStr = jwt.sign(user, config.jwtSecretKey, { expiresIn: config.expiresIn})
+        return res.send({
+            status: 0,
+            message: '登录成功',
+            token: 'Beare ' + tokenStr
+        })
+    })
 }
-
