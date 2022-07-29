@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 //一定要在路由之前解析token
 const {expressjwt: expressJWT} = require('express-jwt')
 const config = require('./const')
-app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unless({ path: ["/api"] }))
+app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unless({ path: [/^\/api\//,'/user/login'] }))
 
 //导入并使用用户路由模块
 const userRouter = require('./router/user');
@@ -32,7 +32,9 @@ app.use('/api',apiRouter);
 
 //错误级别中间件
 app.use((err, req, res, next) => {
-    if(err.name === 'UnauthorizedError') return res.cc("身份认证失败")
+    if(err.name === 'UnauthorizedError') {
+        return res.cc("身份认证失败")
+    }
     res.cc(err)
 })
 app.listen(3007, () => {

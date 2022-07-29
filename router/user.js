@@ -5,4 +5,5 @@ router.post('/reguser', userHandler.regUser)
 
 router.post('/login', userHandler.logIn)
 
+router.post('/deleteComments',userHandler.deleteComments)
 module.exports = router

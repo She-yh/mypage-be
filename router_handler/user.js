@@ -9,7 +9,7 @@ exports.regUser = (req, res) => {
 }
 
 exports.logIn = (req, res) => {
-    const userInfo = req.body
+    const userInfo = req.body;
     const sql = `select * from userInfo where username=?`
     if(!userInfo.username || !userInfo.password) {
         return res.cc("用户名或密码不合法")
@@ -20,7 +20,7 @@ exports.logIn = (req, res) => {
             if(results.length === 0) return res.cc("未查询到用户信息")
             else return res.cc("用户重复注册")
         }
-        const compareResult = bcryptjs.compareSync(userInfo.password, results[0].password)
+        const compareResult = bcryptjs.compareSync(userInfo.password, results[0].password)//对比密码是否正确
         if(!compareResult){
             return res.cc("密码错误")
         }
@@ -29,7 +29,18 @@ exports.logIn = (req, res) => {
         return res.send({
             status: 0,
             message: '登录成功',
-            token: 'Beare ' + tokenStr
+            token: 'Bearer ' + tokenStr
         })
+    })
+}
+
+exports.deleteComments = (req, res) => {
+    const id = req.body.id;
+    const sql=`delete from comments where id = ${id}`
+    console.log(req)
+    db.query(sql, (err, results) => {
+        if(err) return res.cc(err)
+        if(results.length === 0) return res.cc('删除评论失败')
+        return res.send(results)
     })
 }
